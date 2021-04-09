@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"strings"
 
 	"github.com/LarryKapija/shoppinglist_api/models"
 	"github.com/gin-gonic/gin"
 )
+
+var Etags map[string]string = make(map[string]string)
 
 func Recover(c *gin.Context) {
 	if r := recover(); r != nil {
@@ -36,4 +39,13 @@ func ToList(values map[int]models.ShoppingList) []models.ShoppingList {
 		list = append(list, value)
 	}
 	return list
+}
+func EvaluatePreconditions(path string, value string, method string) bool {
+	fmt.Println(path, value, method)
+	e := Etags[path]
+	fmt.Println(e)
+	if strings.Compare(e, value) == 0 && (method == "GET" || method == "HEAD") {
+		return false
+	}
+	return true
 }

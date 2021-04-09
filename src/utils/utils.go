@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 
+	"github.com/LarryKapija/shoppinglist_api/models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,4 +28,12 @@ func ReadFromBody(body io.ReadCloser, val interface{}) error {
 		return err
 	}
 	return nil
+}
+
+func ToList(values map[int]models.ShoppingList) []models.ShoppingList {
+	list := make([]models.ShoppingList, 0)
+	for _, value := range values {
+		list = append(list, value)
+	}
+	return list
 }

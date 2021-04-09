@@ -14,7 +14,9 @@ func main() {
 	//==> Create
 	r.POST("/LIST", controllers.PostList)
 	//==> Read
+	r.GET("/LIST", controllers.GetLists)
 	r.GET("/LIST/:listId", controllers.GetList)
+	r.HEAD("/LIST/:listId", controllers.GetList)
 	//==> Update
 	r.PUT("/LIST/:listId", controllers.PutList)
 	//==> Delete

@@ -37,7 +37,8 @@ func PostList(c *gin.Context) {
 func GetLists(c *gin.Context) {
 	defer utils.Recover(c)
 	if len(models.ShoppingLists) == 0 {
-		c.Status(utils.NoContent)
+		body := make([]models.ShoppingList, 0)
+		c.JSON(utils.NoContent, body)
 		return
 	}
 	list := utils.ToList(models.ShoppingLists)

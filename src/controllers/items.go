@@ -46,7 +46,6 @@ func GetItems(c *gin.Context) {
 	defer utils.Recover(c)
 	itemName := c.Param("name")
 	listId, err := strconv.Atoi(c.Param("listId"))
-
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -56,6 +55,7 @@ func GetItems(c *gin.Context) {
 	if err != nil {
 		fmt.Println(err.Error())
 		c.JSON(utils.NotFound, gin.H{"message": err.Error()})
+		return
 	}
 	c.JSON(utils.Ok, gin.H{
 		"name":     item.Name,
@@ -77,7 +77,6 @@ func PutItems(c *gin.Context) {
 		fmt.Println(err.Error())
 		c.JSON(utils.BadRequest, gin.H{"message": "Bad Request"})
 	}
-
 	_, err = findItem(listId, name, true)
 	if err != nil {
 		c.JSON(utils.NotFound, gin.H{"message": err.Error()})
@@ -85,7 +84,6 @@ func PutItems(c *gin.Context) {
 	}
 	item.Name = name
 	models.ShoppingLists[listId].Items[name] = item
-
 	c.JSON(utils.Ok, item)
 }
 

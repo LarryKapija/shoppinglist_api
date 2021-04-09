@@ -4,12 +4,14 @@ import (
 	"log"
 
 	"github.com/LarryKapija/shoppinglist_api/controllers"
+	"github.com/LarryKapija/shoppinglist_api/utils"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	r := gin.Default()
 
+	r.Use(utils.VersioningHandler())
 	//==-===SHOPPINGLIST===-==\\
 	//==> Create
 	r.POST("/LIST", controllers.PostList)
@@ -28,6 +30,7 @@ func main() {
 	//==> Read
 
 	r.GET("/LIST/:listId/ITEM/:name", controllers.GetItems)
+	r.HEAD("/LIST/:listId/ITEM/:name", controllers.GetItems)
 	//==> Update
 	r.PUT("/LIST/:listId/ITEM/:name", controllers.PutItems)
 	//==> Delete

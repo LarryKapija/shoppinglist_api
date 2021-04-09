@@ -36,11 +36,6 @@ func PostList(c *gin.Context) {
 
 func GetLists(c *gin.Context) {
 	defer utils.Recover(c)
-	if len(models.ShoppingLists) == 0 {
-		body := make([]models.ShoppingList, 0)
-		c.JSON(utils.NoContent, body)
-		return
-	}
 	list := utils.ToList(models.ShoppingLists)
 	c.JSON(utils.Ok, list)
 }
@@ -48,7 +43,6 @@ func GetLists(c *gin.Context) {
 func GetList(c *gin.Context) {
 	defer utils.Recover(c)
 	id, err := strconv.Atoi(c.Param("listId"))
-
 	if err != nil {
 		fmt.Println(err)
 		return

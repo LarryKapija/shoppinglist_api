@@ -43,7 +43,6 @@ func GetLists(c *gin.Context) {
 func GetList(c *gin.Context) {
 	defer utils.Recover(c)
 	id, err := strconv.Atoi(c.Param("listId"))
-
 	if err != nil {
 		fmt.Println(err)
 		return

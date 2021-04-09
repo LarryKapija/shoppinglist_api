@@ -1,14 +1,12 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	"strconv"
 
 	"github.com/LarryKapija/shoppinglist_api/models"
 	"github.com/LarryKapija/shoppinglist_api/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/hhsnopek/etag"
 )
 
 func PostItems(c *gin.Context) {
@@ -48,13 +46,8 @@ func GetItems(c *gin.Context) {
 	defer utils.Recover(c)
 	itemName := c.Param("name")
 	listId, err := strconv.Atoi(c.Param("listId"))
-	et := c.Request.Header.Get("If-None-Match")
 	if err != nil {
 		fmt.Println(err)
-		return
-	}
-	if utils.EvaluatePreconditions(c.Request.URL.Path, et, c.Request.Method) {
-		c.Status(utils.NotModified)
 		return
 	}
 
@@ -64,13 +57,6 @@ func GetItems(c *gin.Context) {
 		c.JSON(utils.NotFound, gin.H{"message": err.Error()})
 		return
 	}
-	val, err := json.Marshal(item)
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	e := etag.Generate(val, false)
-	utils.Etags[c.Request.URL.Path] = e
-	c.Header("Etag", e)
 	c.JSON(utils.Ok, gin.H{
 		"name":     item.Name,
 		"quantity": item.Quantity,
@@ -91,7 +77,6 @@ func PutItems(c *gin.Context) {
 		fmt.Println(err.Error())
 		c.JSON(utils.BadRequest, gin.H{"message": "Bad Request"})
 	}
-
 	_, err = findItem(listId, name, true)
 	if err != nil {
 		c.JSON(utils.NotFound, gin.H{"message": err.Error()})
@@ -99,7 +84,6 @@ func PutItems(c *gin.Context) {
 	}
 	item.Name = name
 	models.ShoppingLists[listId].Items[name] = item
-
 	c.JSON(utils.Ok, item)
 }
 

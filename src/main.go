@@ -28,6 +28,7 @@ func main() {
 	//==> Read
 
 	r.GET("/LIST/:listId/ITEM/:name", controllers.GetItems)
+	r.HEAD("/LIST/:listId/ITEM/:name", controllers.GetItems)
 	//==> Update
 	r.PUT("/LIST/:listId/ITEM/:name", controllers.PutItems)
 	//==> Delete

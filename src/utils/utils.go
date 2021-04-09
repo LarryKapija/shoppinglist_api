@@ -43,9 +43,10 @@ func ToList(values map[int]models.ShoppingList) []models.ShoppingList {
 func EvaluatePreconditions(path string, value string, method string) bool {
 	fmt.Println(path, value, method)
 	e := Etags[path]
-	fmt.Println(e)
-	if strings.Compare(e, value) == 0 && (method == "GET" || method == "HEAD") {
-		return false
+	if (method == "GET" || method == "HEAD") && value != "" {
+		return strings.Contains(e, value)
+	} else if method == "PUT" && value != "" {
+		return !strings.Contains(e, value)
 	}
-	return true
+	return false
 }

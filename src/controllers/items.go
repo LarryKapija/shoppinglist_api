@@ -53,12 +53,16 @@ func GetItems(c *gin.Context) {
 		fmt.Println(err)
 		return
 	}
-	isFresh := utils.EvaluatePreconditions(c.Request.URL.Path, et, c.Request.Method)
-	fmt.Println(isFresh)
+	if utils.EvaluatePreconditions(c.Request.URL.Path, et, c.Request.Method) {
+		c.Status(utils.NotModified)
+		return
+	}
+
 	item, err := findItem(listId, itemName, true)
 	if err != nil {
 		fmt.Println(err.Error())
 		c.JSON(utils.NotFound, gin.H{"message": err.Error()})
+		return
 	}
 	val, err := json.Marshal(item)
 	if err != nil {

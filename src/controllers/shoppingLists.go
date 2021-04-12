@@ -28,7 +28,9 @@ func PostList(c *gin.Context) {
 	autoIncrement++
 	list.Id = autoIncrement
 	list.Date = time.Now()
-	list.Items = make(map[int]models.Item)
+	if list.Items == nil {
+		list.Items = make(map[int]models.Item)
+	}
 	models.ShoppingLists[list.Id] = list
 
 	c.JSON(http.StatusCreated, list)
@@ -75,7 +77,9 @@ func PutList(c *gin.Context) {
 		return
 	}
 	list.Id = id
-	list.Items = models.ShoppingLists[id].Items
+	if list.Items == nil {
+		list.Items = models.ShoppingLists[id].Items
+	}
 	models.ShoppingLists[id] = list
 	c.JSON(http.StatusOK, list)
 }

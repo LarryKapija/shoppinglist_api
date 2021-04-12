@@ -17,6 +17,7 @@ func main() {
 	r.POST("/LIST", controllers.PostList)
 	//==> Read
 	r.GET("/LIST", controllers.GetLists)
+	r.HEAD("/LIST", controllers.GetLists)
 	r.GET("/LIST/:listId", controllers.GetList)
 	r.HEAD("/LIST/:listId", controllers.GetList)
 	//==> Update
@@ -28,7 +29,8 @@ func main() {
 	//==> Create
 	r.POST("/LIST/:listId/ITEM", controllers.PostItems)
 	//==> Read
-
+	r.GET("/LIST/:listId/ITEM", controllers.GetItems)
+	r.HEAD("/LIST/:listId/ITEM", controllers.GetItems)
 	r.GET("/LIST/:listId/ITEM/:id", controllers.GetItem)
 	r.HEAD("/LIST/:listId/ITEM/:id", controllers.GetItem)
 	//==> Update

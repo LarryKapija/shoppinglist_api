@@ -4,14 +4,14 @@ import (
 	"log"
 
 	"github.com/LarryKapija/shoppinglist_api/controllers"
-	"github.com/LarryKapija/shoppinglist_api/utils"
+	"github.com/LarryKapija/shoppinglist_api/middlewares"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 	r := gin.Default()
 
-	r.Use(utils.VersioningHandler())
+	r.Use(middlewares.CacheControlHandler())
 	//==-===SHOPPINGLIST===-==\\
 	//==> Create
 	r.POST("/LIST", controllers.PostList)
@@ -29,12 +29,12 @@ func main() {
 	r.POST("/LIST/:listId/ITEM", controllers.PostItems)
 	//==> Read
 
-	r.GET("/LIST/:listId/ITEM/:name", controllers.GetItems)
-	r.HEAD("/LIST/:listId/ITEM/:name", controllers.GetItems)
+	r.GET("/LIST/:listId/ITEM/:id", controllers.GetItem)
+	r.HEAD("/LIST/:listId/ITEM/:id", controllers.GetItem)
 	//==> Update
-	r.PUT("/LIST/:listId/ITEM/:name", controllers.PutItems)
+	r.PUT("/LIST/:listId/ITEM/:id", controllers.PutItems)
 	//==> Delete
-	r.DELETE("/LIST/:listId/ITEM/:name", controllers.DeleteItems)
+	r.DELETE("/LIST/:listId/ITEM/:id", controllers.DeleteItems)
 	//=======================\\
 
 	log.Fatal(r.Run())

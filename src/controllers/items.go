@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"fmt"
-	"strconv"
+	"net/http"
 
 	"github.com/LarryKapija/shoppinglist_api/models"
 	"github.com/LarryKapija/shoppinglist_api/utils"
@@ -12,52 +12,61 @@ import (
 func PostItems(c *gin.Context) {
 	defer utils.Recover(c)
 	body := c.Request.Body
-	listId, err := strconv.Atoi(c.Param("listId"))
-	if err != nil {
-		fmt.Println(err.Error())
-		return
-	}
+	listId := utils.StringToInt(c.Param("listId"))
 
 	var item models.Item
 	if err := utils.ReadFromBody(body, &item); err != nil {
 		fmt.Println(err.Error())
-		c.JSON(utils.BadRequest, gin.H{
-			"message": "Bad request",
-		})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad request"})
 		return
 	}
-	_, err = findItem(listId, item.Name, false)
+	_, err := utils.FindItem(listId, item.Id, false)
 	if err != nil {
 		fmt.Println(err.Error())
-		c.JSON(utils.NotFound, gin.H{"message": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
 		return
 	}
-	if _, ok := models.ShoppingLists[listId].Items[item.Name]; ok {
-		c.JSON(utils.Conflict, gin.H{"message": "Already Exists"})
+	if utils.NameExists(listId, item.Name) {
+		c.JSON(http.StatusConflict, gin.H{"message": "Already Exists"})
 		return
 	}
-	item.State = models.Pending
-	models.ShoppingLists[listId].Items[item.Name] = item
-	c.JSON(utils.Created, item)
+	id := utils.GetLastId(listId)
+	item.Id = id + 1
+	if item.State == 0 {
+		item.State = models.Pending
+	}
+	models.ShoppingLists[listId].Items[item.Id] = item
+	c.JSON(http.StatusCreated, item)
 
 }
 
 func GetItems(c *gin.Context) {
 	defer utils.Recover(c)
-	itemName := c.Param("name")
-	listId, err := strconv.Atoi(c.Param("listId"))
+	queries := c.Request.URL.Query()
+	listId := utils.StringToInt(c.Param("listId"))
 
-	if err != nil {
-		fmt.Println(err)
+	shoppingList, ok := models.ShoppingLists[listId]
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "List Not Found"})
 		return
 	}
+	list := shoppingList.ItemsToList()
+	list = utils.ItemFilterBy(queries, list)
+	c.JSON(http.StatusOK, list)
+}
 
-	item, err := findItem(listId, itemName, true)
+func GetItem(c *gin.Context) {
+	defer utils.Recover(c)
+	id := utils.StringToInt(c.Param("id"))
+	listId := utils.StringToInt(c.Param("listId"))
+
+	item, err := utils.FindItem(listId, id, true)
 	if err != nil {
 		fmt.Println(err.Error())
-		c.JSON(utils.NotFound, gin.H{"message": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		return
 	}
-	c.JSON(utils.Ok, gin.H{
+	c.JSON(http.StatusOK, gin.H{
 		"name":     item.Name,
 		"quantity": item.Quantity,
 		"state":    item.State,
@@ -65,66 +74,39 @@ func GetItems(c *gin.Context) {
 }
 func PutItems(c *gin.Context) {
 	defer utils.Recover(c)
-	name := c.Param("name")
-	listId, err := strconv.Atoi(c.Param("listId"))
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	id := utils.StringToInt(c.Param("id"))
+	listId := utils.StringToInt(c.Param("listId"))
 	body := c.Request.Body
 	var item models.Item
 	if err := utils.ReadFromBody(body, &item); err != nil {
 		fmt.Println(err.Error())
-		c.JSON(utils.BadRequest, gin.H{"message": "Bad Request"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad Request"})
 	}
-
-	_, err = findItem(listId, name, true)
+	_, err := utils.FindItem(listId, id, true)
 	if err != nil {
-		c.JSON(utils.NotFound, gin.H{"message": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
 		return
 	}
-	item.Name = name
-	models.ShoppingLists[listId].Items[name] = item
-
-	c.JSON(utils.Ok, item)
+	item.Id = id
+	models.ShoppingLists[listId].Items[id] = item
+	c.JSON(http.StatusOK, item)
 }
 
 func DeleteItems(c *gin.Context) {
 	defer utils.Recover(c)
-	name := c.Param("name")
-	listIdString := c.Param("listId")
+	id := utils.StringToInt(c.Param("id"))
+	listId := utils.StringToInt(c.Param("listId"))
 
-	listId, err := strconv.Atoi(listIdString)
-
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	item, err := findItem(listId, name, true)
+	item, err := utils.FindItem(listId, id, true)
 	if err != nil {
 		fmt.Println(err.Error())
-		c.JSON(utils.NotFound, gin.H{"message": err.Error()})
+		c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
 	}
 	//Lazy remove
 	item.State = models.Discarded
-	models.ShoppingLists[listId].Items[name] = item
+	models.ShoppingLists[listId].Items[id] = item
 
 	//Remove
 	// delete(models.ShoppingLists[listId].Items, item.Name)
-	c.JSON(utils.Ok, item)
-}
-
-func findItem(listId int, name string, isnotFoundError bool) (models.Item, error) {
-	_, ok := models.ShoppingLists[listId]
-
-	if !ok {
-		return models.Item{}, fmt.Errorf("List Not Found")
-	}
-
-	item, ok2 := models.ShoppingLists[listId].Items[name]
-	if !ok2 && isnotFoundError {
-		return models.Item{}, fmt.Errorf("Item Not Found")
-	}
-	return item, nil
+	c.JSON(http.StatusOK, item)
 }

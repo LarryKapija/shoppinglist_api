@@ -92,6 +92,25 @@ func PutItems(c *gin.Context) {
 	c.JSON(http.StatusOK, item)
 }
 
+func PatchItems(c *gin.Context) {
+	defer utils.Recover(c)
+	id := utils.StringToInt(c.Param("id"))
+	listId := utils.StringToInt(c.Param("listId"))
+	body := c.Request.Body
+	var item map[string]interface{}
+	if err := utils.ReadFromBody(body, &item); err != nil {
+		fmt.Println(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad Request"})
+	}
+	itemToUpdate, err := utils.FindItem(listId, id, true)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		return
+	}
+	itemToUpdate.Update(item)
+	c.JSON(http.StatusOK, itemToUpdate)
+}
+
 func DeleteItems(c *gin.Context) {
 	defer utils.Recover(c)
 	id := utils.StringToInt(c.Param("id"))

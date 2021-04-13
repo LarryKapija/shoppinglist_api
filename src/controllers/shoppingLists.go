@@ -84,6 +84,26 @@ func PutList(c *gin.Context) {
 	c.JSON(http.StatusOK, list)
 }
 
+func PatchList(c *gin.Context) {
+	defer utils.Recover(c)
+	id := utils.StringToInt(c.Param("listId"))
+
+	body := c.Request.Body
+	var list map[string]interface{}
+	if err := utils.ReadFromBody(body, &list); err != nil {
+		fmt.Println(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Bad Request"})
+		return
+	}
+	listToUpdate, ok := models.ShoppingLists[id]
+	if !ok {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Not Found"})
+		return
+	}
+	listToUpdate.Update(list)
+	c.JSON(http.StatusOK, listToUpdate)
+}
+
 func DeleteList(c *gin.Context) {
 	defer utils.Recover(c)
 	id := utils.StringToInt(c.Param("listId"))

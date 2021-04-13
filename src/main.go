@@ -11,34 +11,38 @@ import (
 func main() {
 	r := gin.Default()
 
-	r.Use(middlewares.CacheControlHandler())
+	auth := r.Group("/", middlewares.Authorize())
+	auth.Use(middlewares.CacheControlHandler())
 	//==-===SHOPPINGLIST===-==\\
 	//==> Create
-	r.POST("/LIST", controllers.PostList)
+	auth.POST("/LIST", controllers.PostList)
 	//==> Read
-	r.GET("/LIST", controllers.GetLists)
-	r.HEAD("/LIST", controllers.GetLists)
-	r.GET("/LIST/:listId", controllers.GetList)
-	r.HEAD("/LIST/:listId", controllers.GetList)
+	auth.GET("/LIST", controllers.GetLists)
+	auth.HEAD("/LIST", controllers.GetLists)
+	auth.GET("/LIST/:listId", controllers.GetList)
+	auth.HEAD("/LIST/:listId", controllers.GetList)
 	//==> Update
-	r.PUT("/LIST/:listId", controllers.PutList)
+	auth.PUT("/LIST/:listId", controllers.PutList)
+	auth.PATCH("/LIST/:listId", controllers.PutList)
 	//==> Delete
-	r.DELETE("/LIST/:listId", controllers.DeleteList)
+	auth.DELETE("/LIST/:listId", controllers.DeleteList)
 	//=======================\\
 	//====-===ITEMS===-=====\\
 	//==> Create
-	r.POST("/LIST/:listId/ITEM", controllers.PostItems)
+	auth.POST("/LIST/:listId/ITEM", controllers.PostItems)
 	//==> Read
-	r.GET("/LIST/:listId/ITEM", controllers.GetItems)
-	r.HEAD("/LIST/:listId/ITEM", controllers.GetItems)
-	r.GET("/LIST/:listId/ITEM/:id", controllers.GetItem)
-	r.HEAD("/LIST/:listId/ITEM/:id", controllers.GetItem)
+	auth.GET("/LIST/:listId/ITEM", controllers.GetItems)
+	auth.HEAD("/LIST/:listId/ITEM", controllers.GetItems)
+	auth.GET("/LIST/:listId/ITEM/:id", controllers.GetItem)
+	auth.HEAD("/LIST/:listId/ITEM/:id", controllers.GetItem)
 	//==> Update
-	r.PUT("/LIST/:listId/ITEM/:id", controllers.PutItems)
+	auth.PUT("/LIST/:listId/ITEM/:id", controllers.PutItems)
+	auth.PATCH("/LIST/:listId/ITEM/:id", controllers.PatchItems)
 	//==> Delete
-	r.DELETE("/LIST/:listId/ITEM/:id", controllers.DeleteItems)
+	auth.DELETE("/LIST/:listId/ITEM/:id", controllers.DeleteItems)
 	//=======================\\
-
+	r.POST("/SIGNIN", middlewares.Signup)
+	r.POST("/LOGOUT", middlewares.Logout)
 	log.Fatal(r.Run())
 
 }
